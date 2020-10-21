@@ -31,6 +31,8 @@ class EventController extends Controller
     {
         $data = request()->all();
 
+        Log::info(json_encode($data));
+
         // Here, handle the event based on its type. The event payload data is
         // sent in the request's "event" parameter
         // More info on event types: https://api.slack.com/events-api#event_types
