@@ -32,8 +32,6 @@ class EventController extends Controller
     {
         $data = request()->all();
 
-        Log::info(json_encode($data));
-
         // Here, handle the event based on its type. The event payload data is
         // sent in the request's "event" parameter
         // More info on event types: https://api.slack.com/events-api#event_types
@@ -70,6 +68,8 @@ class EventController extends Controller
         // We only want to deal with call messages
         foreach ($event['blocks'] as $block) {
             if ($block['type'] === 'call' && isset($block['call'])) {
+                Log::info(json_encode($data));
+
                 $joinUrl = Arr::get($block, 'call.v1.join_url');
                 if ($joinUrl) {
                     $channel = $event['channel'];
