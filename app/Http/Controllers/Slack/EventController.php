@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Slack;
 
 use App\Http\Controllers\Controller;
+use App\Slack\SlackClient;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 
@@ -38,12 +39,8 @@ class EventController extends Controller
         // More info on event types: https://api.slack.com/events-api#event_types
         if ($event = Arr::get($data, 'event')) {
             switch ($event['type']) {
-                case 'reaction_added':
-                    //
-                    break;
-
-                case 'link_shared':
-                    //
+                case 'message':
+                    $this->handleMessage($event);
                     break;
 
                 default:
@@ -60,5 +57,30 @@ class EventController extends Controller
 
         // By default, return an empty 200 to acknowledge we've received the event
         return response(null, 200);
+    }
+
+    public function handleMessage($event)
+    {
+        $client = app(SlackClient::class);
+
+        if ($event['subtype'] !== 'bot_message') {
+            return;
+        }
+
+        // We only want to deal with call messages
+        foreach ($event['blocks'] as $block) {
+            if ($block['type'] === 'call' && isset($block['call'])) {
+                $joinUrl = Arr::get($block, 'call.v1.join_url');
+                if ($joinUrl) {
+                    $channel = $event['channel'];
+
+                    $response = $client->postMessage($channel, 'Meeting link in thread');
+
+                    // Thread the link, since it's hella long
+                    $threadTs = Arr::get($response, 'ts');
+                    $response = $client->postMessage($channel, $joinUrl, $threadTs);
+                }
+            }
+        }
     }
 }

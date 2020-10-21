@@ -5,6 +5,7 @@ namespace App\Slack;
 use App\Exceptions\SlackApiError;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 /**
  * This is a simple client for the Slack API. Authentication is
@@ -60,6 +61,17 @@ class SlackClient
         return $this->callMethod($endpoint, $args);
     }
 
+    public function postMessage($channel, $text = null, $threadTs = null)
+    {
+        $endpoint = static::BASE . 'chat.postMessage';
+
+        return $this->callMethod($endpoint, [
+            'channel' => $channel,
+            'text' => $text,
+            'thread_ts' => $threadTs,
+        ]);
+    }
+
     public function callMethod($endpoint, $args)
     {
         $response = Http::withHeaders([
@@ -69,6 +81,10 @@ class SlackClient
         ->post($endpoint, $args);
 
         if (! $response->ok() || Arr::get($response, 'ok') != true) {
+            Log::error("Error calling {$endpoint}");
+            Log::error(Arr::get($response, 'error'));
+            Log::error($args);
+            Log::error($response->json());
             throw new SlackApiError(
                 "Error calling {$endpoint}",
                 Arr::get($response, 'error'),
