@@ -63,7 +63,7 @@ class EventController extends Controller
     {
         $client = app(SlackClient::class);
 
-        if ($event['subtype'] !== 'bot_message') {
+        if (Arr::get($event, 'subtype') !== 'bot_message') {
             return;
         }
 
