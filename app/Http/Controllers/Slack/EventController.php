@@ -73,12 +73,9 @@ class EventController extends Controller
                 $joinUrl = Arr::get($block, 'call.v1.join_url');
                 if ($joinUrl) {
                     $channel = $event['channel'];
-
-                    $response = $client->postMessage($channel, 'Meeting link in thread');
-
-                    // Thread the link, since it's hella long
-                    $threadTs = Arr::get($response, 'ts');
-                    $response = $client->postMessage($channel, $joinUrl, $threadTs);
+                    $displayId = $block['display_id'];
+                    $message = "Shareable link: <{$joinUrl}|{$displayId}>";
+                    $client->postMessage($channel, 'Meeting link in thread');
                 }
             }
         }
