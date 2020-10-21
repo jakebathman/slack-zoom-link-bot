@@ -75,7 +75,8 @@ class EventController extends Controller
                     $channel = $event['channel'];
                     $displayId = Arr::get($block, 'call.v1.display_id');
                     $message = "Shareable link: <{$joinUrl}|{$displayId}>";
-                    $client->postMessage($channel, 'Meeting link in thread');
+
+                    $client->postMessage($channel, $message);
                 }
             }
         }
