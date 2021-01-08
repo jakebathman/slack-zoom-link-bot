@@ -65,6 +65,10 @@ class EventController extends Controller
             return;
         }
 
+        if (! Arr::get($event, 'blocks')) {
+            return;
+        }
+
         // We only want to deal with call messages
         foreach ($event['blocks'] as $block) {
             if ($block['type'] === 'call' && isset($block['call'])) {
