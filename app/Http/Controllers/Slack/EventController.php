@@ -72,7 +72,7 @@ class EventController extends Controller
         // We only want to deal with call messages
         foreach ($event['blocks'] as $block) {
             if ($block['type'] === 'call' && isset($block['call'])) {
-                Log::info(json_encode($data));
+                Log::info(json_encode($block));
 
                 $joinUrl = Arr::get($block, 'call.v1.join_url');
                 if ($joinUrl) {
