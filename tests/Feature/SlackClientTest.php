@@ -4,40 +4,51 @@ namespace Tests\Feature;
 
 use App\Exceptions\SlackApiError;
 use App\Slack\SlackClient;
-use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Http;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use Throwable;
 
 class SlackClientTest extends TestCase
 {
-    /** @test */
-    function it_calls_api_methods_successfully()
+    #[Test]
+    public function it_calls_api_methods_successfully(): void
     {
+        Http::fake([
+            'https://slack.com/api/api.test' => Http::response([
+                'ok' => true,
+                'args' => ['foo' => 'some return value'],
+            ], 200),
+        ]);
+
         $client = app(SlackClient::class);
 
         $response = $client->apiTest(null, 'some return value');
 
         $this->assertIsArray($response);
-        $this->assertEquals(true, $response['ok']);
+        $this->assertTrue($response['ok']);
         $this->assertEquals('some return value', $response['args']['foo']);
     }
 
-    /** @test */
-    function it_throws_errors_when_slack_returns_not_ok()
+    #[Test]
+    public function it_throws_errors_when_slack_returns_not_ok(): void
     {
         $this->withoutExceptionHandling();
 
+        Http::fake([
+            'https://slack.com/api/api.test' => Http::response([
+                'ok' => false,
+                'error' => 'some_error',
+            ], 200),
+        ]);
+
         $client = app(SlackClient::class);
 
-        $error = 'some_error';
         try {
-            $response = $client->apiTest($error);
+            $client->apiTest('some_error');
 
-            $this->assertTrue(false, 'Expected SlackApiError not thrown by SlackClient');
+            $this->fail('Expected SlackApiError not thrown by SlackClient');
         } catch (SlackApiError $e) {
-            $this->assertInstanceOf(SlackApiError::class, $e);
-            $this->assertEquals($error, $e->getError());
-            $this->assertEquals($error, $e->getError());
+            $this->assertEquals('some_error', $e->getError());
         }
     }
 }

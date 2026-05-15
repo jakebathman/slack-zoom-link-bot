@@ -27,7 +27,7 @@ class SlackApiVerification
         // Get the timestamp header value and ensure it's within 5 minutes from now
         $timestamp = $request->header('X-Slack-Request-Timestamp');
 
-        if (Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($timestamp)) > 5) {
+        if (abs(Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($timestamp))) > 5) {
             throw new SlackApiVerificationException('Invalid X-Slack-Request-Timestamp, difference is greater than 5 minutes. See Slack API documentation for Signing Signature verification for more info: https://api.slack.com/authentication/verifying-requests-from-slack#a_recipe_for_security');
         }
 
@@ -47,7 +47,7 @@ class SlackApiVerification
         $signature = "{$version}={$hash}";
 
         // Check that the signature in the request header matches the one we just made
-        if ($signature !== $request->header('X-Slack-Signature')) {
+        if (! hash_equals($signature, (string) $request->header('X-Slack-Signature'))) {
             throw new SlackApiVerificationException('Invalid signature when attempting to validate incoming Slack request in SlackApiVerification middleware.');
         }
 
