@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Slack\EventController;
+use App\Http\Controllers\Slack\InteractionController;
+use App\Http\Controllers\Slack\SlashCommandController;
 use Illuminate\Support\Facades\Route;
 
 Route::name('slack.')->prefix('slack')
@@ -9,9 +12,9 @@ Route::name('slack.')->prefix('slack')
             return response()->json(['ok' => true]);
         })->name('test');
 
-        Route::any('slash/foo', 'Slack\SlashCommandController@foo')->name('slash.foo');
+        Route::any('slash/foo', [SlashCommandController::class, 'foo'])->name('slash.foo');
 
-        Route::post('interaction', 'Slack\InteractionController')->name('interaction');
+        Route::post('interaction', InteractionController::class)->name('interaction');
 
-        Route::post('event', 'Slack\EventController')->name('event');
+        Route::post('event', EventController::class)->name('event');
     });
